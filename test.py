@@ -118,3 +118,8 @@ if not os.path.exists(cov_fname):
     noise_cov = mne.read_cov(cov_fname)
 else:
     noise_cov = mne.read_cov(cov_fname)
+
+inv = mne.minimum_norm.make_inverse_operator(
+    raw.info, fwd, noise_cov, verbose=True)
+stc = mne.minimum_norm.apply_inverse(raw, inv)
+brain = stc.plot(subjects_dir=subjects_dir, initial_time=0.1)
