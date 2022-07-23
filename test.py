@@ -113,7 +113,7 @@ else:
     forward = mne.read_forward_solution(fwd_filename)
 
 cov_fname = op.join(data_path, 'identity_noise-cov.fif')
-if not os.path.exist(cov_fname):
+if not os.path.exists(cov_fname):
     compute_cov_identity(raw_fpath)
     noise_cov = mne.read_cov(cov_fname)
 else:
