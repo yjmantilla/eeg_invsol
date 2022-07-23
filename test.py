@@ -6,7 +6,7 @@ import numpy as np
 subjects_dir = 'data/freesurfer/subjects'
 subject = 'P005'
 eeg_locs = False #"data/ASP-64.bvef"
-subject_path = f'data\subjects\{subject}'
+subject_path = f'data/subjects/{subject}'
 eeg_path = os.path.join(subject_path,"2022-2478_T1_P1_P005.vhdr")
 
 SPACING = 'oct5'
