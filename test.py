@@ -3,6 +3,30 @@ import os
 import mne
 import numpy as np
 
+def split_f(p):
+    data_path,fname = os.path.split(p)
+    fname,ext = os.path.splitext(fname)
+    return data_path,fname,ext
+
+def compute_cov_identity(raw_filename):
+    "Compute Identity Noise Covariance matrix."
+    raw = mne.io.read_raw_fif(raw_filename)
+
+    data_path, basename, ext = split_f(raw_filename)
+    cov_fname = op.join(data_path, 'identity_noise-cov.fif')
+
+    if not op.isfile(cov_fname):
+        picks = mne.pick_types(raw.info, eeg=True)
+
+        ch_names = [raw.info['ch_names'][k] for k in picks]
+        bads = [b for b in raw.info['bads'] if b in ch_names]
+        noise_cov = mne.Covariance(np.identity(len(picks)), ch_names, bads,
+                                   raw.info['projs'], nfree=0)
+
+        mne.write_cov(cov_fname, noise_cov)
+
+    return cov_fname
+
 subjects_dir = 'data/freesurfer/subjects'
 subject = 'P005'
 eeg_locs = False #"data/ASP-64.bvef"
@@ -84,3 +108,13 @@ if not os.path.exists(fwd_filename):
 
     fwd_filename = op.join(data_path, fwd_filename + '-fwd.fif')
     mne.write_forward_solution(fwd_filename, fwd, overwrite=True)
+else:
+    print(('\n*** READ FWD SOL %s ***\n' % fwd_filename))
+    forward = mne.read_forward_solution(fwd_filename)
+
+cov_fname = op.join(data_path, 'identity_noise-cov.fif')
+if not os.path.exist(cov_fname):
+    compute_cov_identity(raw_fpath)
+    noise_cov = mne.read_cov(cov_fname)
+else:
+    noise_cov = mne.read_cov(cov_fname)
