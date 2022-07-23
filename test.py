@@ -32,7 +32,7 @@ subject = 'P005'
 eeg_locs = False #"data/ASP-64.bvef"
 subject_path = f'data/subjects/{subject}'
 eeg_path = os.path.join(subject_path,"2022-2478_T1_P1_P005.vhdr")
-
+SNR = 1.0
 SPACING = 'oct5'
 PREFLOOD=25 #https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/SkullStripFix_freeview
 """
@@ -121,7 +121,10 @@ else:
 
 inv = mne.minimum_norm.make_inverse_operator(
     raw.info, fwd, noise_cov, verbose=True)
-stc = mne.minimum_norm.apply_inverse_raw(raw, inv)
+lambda2 = 1.0 / SNR ** 2
+
+stc = mne.minimum_norm.apply_inverse_raw(raw, inv,lambda2=lambda2,method='MNE')
+
 src_name = os.path.join(data_path,raw_fname +'-src.fif')
 stc.save(src_name)
 #brain = stc.plot(subjects_dir=subjects_dir, initial_time=0.1)
