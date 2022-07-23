@@ -121,5 +121,7 @@ else:
 
 inv = mne.minimum_norm.make_inverse_operator(
     raw.info, fwd, noise_cov, verbose=True)
-stc = mne.minimum_norm.apply_inverse(raw, inv)
-brain = stc.plot(subjects_dir=subjects_dir, initial_time=0.1)
+stc = mne.minimum_norm.apply_inverse_raw(raw, inv)
+src_name = os.path.join(data_path,raw_fname +'-src.fif')
+stc.save(src_name)
+#brain = stc.plot(subjects_dir=subjects_dir, initial_time=0.1)
