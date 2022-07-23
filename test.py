@@ -123,8 +123,11 @@ inv = mne.minimum_norm.make_inverse_operator(
     raw.info, fwd, noise_cov, verbose=True)
 lambda2 = 1.0 / SNR ** 2
 
-stc = mne.minimum_norm.apply_inverse_raw(raw, inv,lambda2=lambda2,method='MNE')
-
 src_name = os.path.join(data_path,raw_fname +'-src.fif')
-stc.save(src_name)
+if not os.path.exists(src_name):
+    raw,_ = mne.set_eeg_reference(raw, ref_channels='average')
+    stc = mne.minimum_norm.apply_inverse_raw(raw, inv,lambda2=lambda2,method='MNE')
+    stc.save(src_name)
+else:
+    stc = mne.read_source_estimate(src_name)
 #brain = stc.plot(subjects_dir=subjects_dir, initial_time=0.1)
