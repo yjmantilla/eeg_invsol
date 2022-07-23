@@ -125,7 +125,8 @@ lambda2 = 1.0 / SNR ** 2
 
 src_name = os.path.join(data_path,raw_fname +'-src.fif')
 if not os.path.exists(src_name):
-    raw,_ = mne.set_eeg_reference(raw, ref_channels='average')
+    #raw,_ = mne.set_eeg_reference(raw, ref_channels='average')
+    raw.set_eeg_reference('average', projection=True)
     stc = mne.minimum_norm.apply_inverse_raw(raw, inv,lambda2=lambda2,method='MNE')
     stc.save(src_name)
 else:
