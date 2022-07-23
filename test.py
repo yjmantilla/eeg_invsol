@@ -34,6 +34,7 @@ subject_path = f'data/subjects/{subject}'
 eeg_path = os.path.join(subject_path,"2022-2478_T1_P1_P005.vhdr")
 SNR = 1.0
 SPACING = 'oct5'
+TMAX=10
 PREFLOOD=25 #https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/SkullStripFix_freeview
 """
 the default preflooding height is 25, which produces the cleanest skull strip for most cases. There aren't any hard and fast rules about how to select your height value, but as a general rule of thumb, if part of the brain is missing, you should start with a watershed threshold around 35, and if too much skull is remaining, you should start with a threshold of around 15.
@@ -42,14 +43,14 @@ the default preflooding height is 25, which produces the cleanest skull strip fo
 #%% Save a fif file of eeg + location info
 raw = mne.io.read_raw_brainvision(eeg_path, preload=True,eog=('EOG1','HEOGL', 'HEOGR', 'VEOGb'))
 raw = raw.pick_types(eeg=True) # Remove non-eeg channels
-
+raw = raw.crop(tmax=TMAX)
 if eeg_locs:
     montage = mne.channels.read_custom_montage(eeg_locs)
 
     raw = raw.set_montage(montage)
 
 raw_fpath=eeg_path.replace('.vhdr','_raw.fif')
-raw.save(raw_fpath,tmin=0,tmax=10,overwrite=True) #10 seconds to make test fast, should be None in real case
+raw.save(raw_fpath,overwrite=True) #N seconds to make test fast, should be None in real case
 
 #%% Make source space
 src_path = op.join(op.dirname(eeg_path),f'{subject}-{SPACING}-src.fif')
@@ -80,7 +81,7 @@ trans_fname = os.path.join(subject_path,f'{subject}_trans.fif')
 
 if not os.path.exists(model_fname):
     # Create a BEM model for a subject
-    surfaces = mne.make_bem_model(subject, ico=3,subjects_dir=subjects_dir)#,conductivity=[0.3])
+    surfaces = mne.make_bem_model(subject, ico=4,subjects_dir=subjects_dir)#,conductivity=[0.3])
     # Write BEM surfaces to a fiff file
     mne.write_bem_surfaces(model_fname, surfaces)
 else:
@@ -119,16 +120,16 @@ if not os.path.exists(cov_fname):
 else:
     noise_cov = mne.read_cov(cov_fname)
 
-inv = mne.minimum_norm.make_inverse_operator(
-    raw.info, fwd, noise_cov, verbose=True)
 lambda2 = 1.0 / SNR ** 2
 
-src_name = os.path.join(data_path,raw_fname +'-src.fif')
-if not os.path.exists(src_name):
+src_name = os.path.join(data_path,raw_fname +'-src')
+if not os.path.exists(src_name+'-lh.stc'):
+    inv = mne.minimum_norm.make_inverse_operator(
+    raw.info, fwd, noise_cov, verbose=True)
     #raw,_ = mne.set_eeg_reference(raw, ref_channels='average')
     raw.set_eeg_reference('average', projection=True)
     stc = mne.minimum_norm.apply_inverse_raw(raw, inv,lambda2=lambda2,method='MNE')
     stc.save(src_name)
 else:
-    stc = mne.read_source_estimate(src_name)
-#brain = stc.plot(subjects_dir=subjects_dir, initial_time=0.1)
+    stc = mne.read_source_estimate(src_name+'-lh.stc')
+brain = stc.plot(subject=subject,subjects_dir=subjects_dir)
