@@ -28,13 +28,13 @@ def compute_cov_identity(raw_filename):
     return cov_fname
 
 subjects_dir = 'data/freesurfer/subjects'
-subject = 'P005'
+subject = 'fsaverage'
 eeg_locs = False #"data/ASP-64.bvef"
 subject_path = f'data/subjects/{subject}'
 eeg_path = os.path.join(subject_path,f"2022-2478_T1_P1_{subject}.vhdr")
-SNR = 10
+SNR = 1
 SPACING = 'oct5'
-TMAX=3
+TMAX=10
 PREFLOOD=25 #https://surfer.nmr.mgh.harvard.edu/fswiki/FsTutorial/SkullStripFix_freeview
 """
 the default preflooding height is 25, which produces the cleanest skull strip for most cases. There aren't any hard and fast rules about how to select your height value, but as a general rule of thumb, if part of the brain is missing, you should start with a watershed threshold around 35, and if too much skull is remaining, you should start with a threshold of around 15.
